@@ -1,20 +1,18 @@
 // src/services/timer.rs
 use crate::services::timeutil::*;
-use sqlx::{Acquire, SqlitePool};
+use sqlx::SqlitePool;
 use uuid::Uuid;
 
 pub async fn start(pool: &SqlitePool, task_id: &str) -> anyhow::Result<()> {
     let mut tx = pool.begin().await?;
     // If active, stop it
-    if let Some(active) = sqlx::query_scalar::<_, Option<String>>(
+    if let Some(id) = sqlx::query_scalar::<_, Option<String>>(
         "SELECT time_entry_id FROM active_timer WHERE singleton=1",
     )
     .fetch_one(&mut *tx)
     .await?
     {
-        if let Some(id) = active {
-            stop_tx(&mut tx, &id).await?;
-        }
+        stop_tx(&mut tx, &id).await?;
     }
 
     let id = Uuid::now_v7().to_string();

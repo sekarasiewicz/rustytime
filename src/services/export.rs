@@ -18,8 +18,7 @@ pub async fn export_json(
     from: Option<&str>,
     to: Option<&str>,
 ) -> anyhow::Result<()> {
-    let rows = sqlx::query_as!(
-        Entry,
+    let rows = sqlx::query!(
         r#"SELECT id, task_id, start_time, end_time, duration_seconds, local_date
        FROM time_entries
        WHERE (? IS NULL OR local_date >= ?)
@@ -32,6 +31,18 @@ pub async fn export_json(
     )
     .fetch_all(pool)
     .await?;
-    std::fs::write(out, serde_json::to_vec_pretty(&rows)?)?;
+
+    let entries: Vec<Entry> = rows
+        .into_iter()
+        .map(|row| Entry {
+            id: row.id.unwrap(),
+            task_id: row.task_id,
+            start_time: row.start_time,
+            end_time: row.end_time,
+            duration_seconds: row.duration_seconds,
+            local_date: row.local_date,
+        })
+        .collect();
+    std::fs::write(out, serde_json::to_vec_pretty(&entries)?)?;
     Ok(())
 }

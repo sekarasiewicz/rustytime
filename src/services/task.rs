@@ -51,7 +51,7 @@ pub async fn list(pool: &SqlitePool, project_id: &str) -> anyhow::Result<Vec<Tas
     Ok(rows
         .into_iter()
         .map(|r| Task {
-            id: r.id,
+            id: r.id.unwrap(),
             project_id: r.project_id,
             name: r.name,
             description: r.description,

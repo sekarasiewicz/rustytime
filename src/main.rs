@@ -15,6 +15,7 @@ use cli::{Cli, Command, ExportFormat, ProjectCmd, ReportCmd, TaskCmd};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    dotenv::dotenv().ok();
     let cli = Cli::parse();
     let pool = db::open_db(&cli.db).await?;
 

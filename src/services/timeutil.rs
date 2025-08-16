@@ -7,7 +7,7 @@ pub fn now_utc() -> OffsetDateTime {
 }
 
 pub fn local_date_warsaw(at: OffsetDateTime) -> String {
-    let tz = timezones::db::EUROPE::WARSAW;
+    let tz = timezones::db::europe::WARSAW;
     let local = at.to_timezone(tz);
     let fmt = format_description!("[year]-[month]-[day]");
     local.format(&fmt).unwrap()
