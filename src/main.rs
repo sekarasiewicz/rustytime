@@ -17,7 +17,8 @@ use cli::{Cli, Command, ExportFormat, ProjectCmd, ReportCmd, TaskCmd};
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     let cli = Cli::parse();
-    let pool = db::open_db(&cli.db).await?;
+    let (db_url, fs_path) = db::resolve_db_url(Some(&cli.db)); // or None if you removed --db
+    let pool = db::open_db_resolved(&db_url, &fs_path).await?;
 
     match cli.cmd {
         Command::Project { cmd } => match cmd {
