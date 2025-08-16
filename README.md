@@ -55,23 +55,24 @@ Entries are grouped by date for reporting.
 
 ## 5. Example CLI Commands
 
+```bash
 # Projects
-timey project add "Website Redesign" --desc "Client X redesign"
-timey project list
-timey project edit 1 --name "Web Redesign"
+rustytime project add "Website Redesign" --desc "Client X redesign"
+rustytime project list
+rustytime project edit 1 --name "Web Redesign"
 
 # Tasks
-timey task add 1 "UI Implementation"
-timey task list 1
+rustytime task add 1 "UI Implementation"
+rustytime task list 1
 
 # Tracking
-timey start 3       # Start task ID 3
-timey stop          # Stop active task
+rustytime start 3       # Start task ID 3
+rustytime stop          # Stop active task
 
 # Reports
-timey report daily
-timey report project 1 --from 2025-08-01 --to 2025-08-10
-
+rustytime report daily
+rustytime report project 1 --from 2025-08-01 --to 2025-08-10
+```
 
 ## 6. Data Model (Example)
 
