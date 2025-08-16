@@ -26,7 +26,12 @@ async fn main() -> anyhow::Result<()> {
                 let id = services::project::add(&pool, &name, desc.as_deref()).await?;
                 println!("{id}");
             }
-            ProjectCmd::List => { /* print rows */ }
+            ProjectCmd::List => {
+                let projects = services::project::list(&pool).await?;
+                for project in projects {
+                    println!("id: {}, name: {}", project.id, project.name);
+                }
+            }
             ProjectCmd::Edit { id, name, desc } => { /* update */ }
             ProjectCmd::Archive { id } => { /* set archived=1 */ }
             ProjectCmd::Delete { id } => { /* delete */ }

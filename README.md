@@ -1,94 +1,219 @@
-# Product Requirements Document — Rust Time Tracker
+# Rustytime ⏱️
 
-## 1. Overview
+A fast, simple command-line time tracker built in Rust. Track time spent on projects and tasks with easy start/stop controls and comprehensive reporting.
 
-A command-line or minimal-GUI Rust application to track time spent on tasks within projects.
-Each project contains multiple tasks, and each play/pause action creates a time entry.
-Entries are grouped by date for reporting.
+## ✨ Features
 
-## 2. Objectives
-	•	Enable developers/freelancers to quickly track working time on various projects and tasks.
-	•	Provide simple start/stop controls without unnecessary overhead.
-	•	Keep persistent, structured records for later review.
+- **Project Management**: Create, list, edit, archive, and delete projects
+- **Task Management**: Organize tasks within projects with full CRUD operations
+- **Time Tracking**: Simple start/stop timer with automatic time entry generation
+- **Reporting**: Daily, project, and task-based time reports with date filtering
+- **Data Export**: Export your time data to JSON or CSV formats
+- **SQLite Storage**: Fast, reliable local database with automatic migrations
+- **Cross-Platform**: Works on macOS, Linux, and Windows
 
-## 3. Core Features
+## 🚀 Installation
 
-3.1 Project Management
-	•	Create a new project (name, optional description).
-	•	List all projects.
-	•	Edit project name/description.
-	•	Archive/delete project.
-
-3.2 Task Management
-	•	Create a task under a specific project (name, optional description).
-	•	List tasks per project.
-	•	Edit task name/description.
-	•	Archive/delete tasks.
-
-3.3 Time Tracking
-	•	Start (Play): Start tracking time for a task.
-	•	Pause (Stop): Stop tracking time for the task.
-	•	Each start/stop generates a time entry with:
-	•	Task ID
-	•	Start timestamp
-	•	End timestamp
-	•	Duration (calculated)
-	•	Only one task can be active at a time (starting a new one pauses the current).
-
-3.4 Data Grouping
-	•	Group time entries by date (based on start time).
-	•	Provide daily summaries per project and per task.
-
-3.5 Reporting
-	•	View total time spent per project over a given date range.
-	•	View total time spent per task over a given date range.
-	•	Export to CSV/JSON.
-
-
-## 4. Non-Functional Requirements
-	•	Language: Rust
-	•	Persistence: SQLite (via sqlx or rusqlite)
-	•	CLI Framework: clap or structopt
-	•	Time Handling: chrono
-	•	OS Compatibility: macOS, Linux, Windows
-	•	Performance: Should handle thousands of time entries with minimal delay.
-
-## 5. Example CLI Commands
-
+### From Source
 ```bash
-# Projects
-rustytime project add "Website Redesign" --desc "Client X redesign"
-rustytime project list
-rustytime project edit 1 --name "Web Redesign"
+# Clone the repository
+git clone https://github.com/yourusername/rustytime.git
+cd rustytime
 
-# Tasks
-rustytime task add 1 "UI Implementation"
-rustytime task list 1
-
-# Tracking
-rustytime start 3       # Start task ID 3
-rustytime stop          # Stop active task
-
-# Reports
-rustytime report daily
-rustytime report project 1 --from 2025-08-01 --to 2025-08-10
+# Build and install
+make install
+# or
+cargo install --path .
 ```
 
-## 6. Data Model (Example)
+### Using Make (Recommended)
+This project includes a comprehensive Makefile for easy development and deployment:
 
-Projects Table
+```bash
+make help          # Show all available commands
+make setup         # Initial development setup
+make install       # Install the binary
+make dev           # Run development checks
+make build-release # Build optimized release binary
+```
 
-id	name	description	archived	created_at
+## 📖 Usage
 
+### Project Management
+```bash
+# Create a new project
+rustytime project add "Website Redesign" --desc "Client website redesign project"
 
-Tasks Table
-| id | project_id | name         | description | archived | created_at |
+# List all projects
+rustytime project list
 
-Time Entries Table
-| id | task_id | start_time         | end_time           | duration_seconds | date        |
+# Edit a project
+rustytime project edit PROJECT_ID --name "New Name" --desc "Updated description"
 
-## 7. Future Enhancements
-	•	Tags for tasks and projects.
-	•	Multiple active timers (optional mode).
-	•	Sync with cloud storage (Supabase, Google Drive).
-	•	Simple TUI (terminal UI) with ratatui crate.
+# Archive a project
+rustytime project archive PROJECT_ID
+
+# Delete a project
+rustytime project delete PROJECT_ID
+```
+
+### Task Management
+```bash
+# Add a task to a project
+rustytime task add PROJECT_ID "UI Implementation" --desc "Implement the new UI design"
+
+# List tasks for a project
+rustytime task list PROJECT_ID
+
+# Edit a task
+rustytime task edit TASK_ID --name "Updated Task Name"
+
+# Archive/delete tasks
+rustytime task archive TASK_ID
+rustytime task delete TASK_ID
+```
+
+### Time Tracking
+```bash
+# Start tracking time for a task
+rustytime start TASK_ID
+
+# Stop the current timer
+rustytime stop
+```
+
+### Reporting
+```bash
+# Daily report (today by default)
+rustytime report daily
+
+# Daily report for specific date
+rustytime report daily --date 2024-01-15
+
+# Project time report
+rustytime report project PROJECT_ID --from 2024-01-01 --to 2024-01-31
+
+# Task time report
+rustytime report task TASK_ID --from 2024-01-01 --to 2024-01-31
+```
+
+### Data Export
+```bash
+# Export to JSON
+rustytime export json --out data.json --from 2024-01-01 --to 2024-12-31
+
+# Export to CSV (coming soon)
+rustytime export csv --out data.csv
+```
+
+## 🗃️ Database
+
+Rustytime uses SQLite for local storage. The database is automatically created and migrated on first run. By default, the database file is stored as `timey.db` in the current directory.
+
+### Custom Database Location
+```bash
+rustytime --db /path/to/custom.db project list
+```
+
+### Database Schema
+
+#### Projects
+- `id` (UUID) - Primary key
+- `name` (TEXT) - Project name
+- `description` (TEXT, optional) - Project description
+- `archived` (BOOLEAN) - Archive status
+- `created_at` (TIMESTAMP) - Creation timestamp
+
+#### Tasks
+- `id` (UUID) - Primary key
+- `project_id` (UUID) - Foreign key to projects
+- `name` (TEXT) - Task name
+- `description` (TEXT, optional) - Task description
+- `archived` (BOOLEAN) - Archive status
+- `created_at` (TIMESTAMP) - Creation timestamp
+
+#### Time Entries
+- `id` (UUID) - Primary key
+- `task_id` (UUID) - Foreign key to tasks
+- `start_time` (TIMESTAMP) - When tracking started
+- `end_time` (TIMESTAMP, optional) - When tracking stopped
+- `duration_seconds` (INTEGER) - Calculated duration
+- `date` (DATE) - Date of the entry (for grouping)
+
+## 🛠️ Development
+
+### Prerequisites
+- Rust 1.70+ with 2024 edition support
+- SQLite 3.x
+
+### Building
+```bash
+# Development build
+make build
+
+# Release build
+make build-release
+
+# Run tests
+make test
+
+# Format code
+make fmt
+
+# Run clippy
+make clippy
+
+# Run all checks
+make dev
+```
+
+### Development Tools
+```bash
+# Watch for changes and run tests
+make watch
+
+# Watch and run the application
+make watch-run
+
+# Generate documentation
+make docs
+
+# Security audit
+make audit
+```
+
+## 🔧 Dependencies
+
+- **clap** - Command-line argument parsing
+- **sqlx** - Async SQL toolkit with compile-time checked queries
+- **tokio** - Async runtime
+- **time** & **time-tz** - Date and time handling with timezone support
+- **uuid** - UUID generation
+- **serde** & **serde_json** - Serialization for data export
+- **anyhow** - Error handling
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## 🚧 Roadmap
+
+- [ ] CSV export functionality
+- [ ] Tags for projects and tasks
+- [ ] Multiple active timers support
+- [ ] Terminal UI (TUI) interface
+- [ ] Cloud synchronization
+- [ ] Time tracking analytics and insights
+- [ ] Integration with popular project management tools
+
+## 💡 Tips
+
+- Use `rustytime --help` to see all available commands
+- The timer automatically stops when starting a new task
+- Date formats should be in YYYY-MM-DD format
+- UUIDs are used for all entity IDs for better uniqueness
+- Use `make example-usage` to see more usage examples
