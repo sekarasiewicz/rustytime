@@ -18,17 +18,20 @@ pub async fn add(pool: &SqlitePool, name: &str, desc: Option<&str>) -> anyhow::R
 }
 
 pub async fn list(pool: &SqlitePool) -> anyhow::Result<Vec<Project>> {
-    let rows = sqlx::query!("SELECT id, name, description, archived, created_at FROM projects")
-        .fetch_all(pool)
-        .await?;
-    Ok(rows
-        .into_iter()
-        .map(|r| Project {
-            id: r.id.unwrap(),
-            name: r.name,
-            description: r.description,
-            archived: r.archived == 1,
-            created_at: r.created_at,
-        })
-        .collect())
+    let rows = sqlx::query_as!(
+        Project,
+        r#"
+        SELECT
+          id as "id!",
+          name as "name!",
+          description,
+          archived as "archived!: bool",
+          created_at as "created_at!"
+        FROM projects
+        ORDER BY created_at
+        "#
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(rows)
 }
