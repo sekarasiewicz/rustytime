@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
             }
             ProjectCmd::Edit { id, name, desc } => { /* update */ }
             ProjectCmd::Archive { id } => { /* set archived=1 */ }
-            ProjectCmd::Delete { id } => { /* delete */ }
+            ProjectCmd::Delete { id } => services::project::delete(&pool, &id).await?,
         },
         Command::Task { cmd } => match cmd {
             TaskCmd::Add {
