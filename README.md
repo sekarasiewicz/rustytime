@@ -108,12 +108,30 @@ rustytime export csv --out data.csv
 
 ## 🗃️ Database
 
-Rustytime uses SQLite for local storage. The database is automatically created and migrated on first run. By default, the database file is stored as `timey.db` in the current directory.
+Rustytime uses SQLite for local storage. The database is automatically created and migrated on first run. By default, the database file is stored at `~/.local/share/rustytime/rustytime.db` (on macOS: `~/Library/Application Support/rustytime/rustytime.db`).
 
 ### Custom Database Location
+
+There are multiple ways to specify a custom database location, in order of priority:
+
+1. **Environment Variable** (Recommended for deployment):
+```bash
+export RUSTYTIME_DATABASE_URL="sqlite:///path/to/custom/rustytime.db"
+rustytime project list
+```
+
+2. **Command Line Option** (For one-off usage):
 ```bash
 rustytime --db /path/to/custom.db project list
 ```
+
+3. **Build-Time Configuration** (For packaged distributions):
+```bash
+# Set at build time to embed the path in the binary
+RUSTYTIME_BUILD_DB_PATH="/opt/rustytime/data/rustytime.db" cargo build --release
+```
+
+The environment variable `RUSTYTIME_DATABASE_URL` is specific to Rustytime and won't conflict with other applications that might use the generic `DATABASE_URL`.
 
 ### Database Schema
 

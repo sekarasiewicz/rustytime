@@ -12,9 +12,18 @@ fn is_sqlite_url(s: &str) -> bool {
 
 fn url_to_fs_path(url: &str) -> Option<PathBuf> {
     // Accept forms like: sqlite://relative.db  or sqlite:///abs/path.db
-    let trimmed = url.strip_prefix("sqlite://")?;
-    // absolute if it starts with '/', else relative
-    Some(PathBuf::from(trimmed))
+    if let Some(trimmed) = url.strip_prefix("sqlite:///") {
+        // sqlite:///abs/path -> /abs/path (trimmed already has leading slash removed)
+        Some(PathBuf::from(format!("/{}", trimmed)))
+    } else if let Some(trimmed) = url.strip_prefix("sqlite://") {
+        // sqlite://relative.db -> relative.db
+        Some(PathBuf::from(trimmed))
+    } else if let Some(trimmed) = url.strip_prefix("sqlite:") {
+        // Handle sqlite:path format as well
+        Some(PathBuf::from(trimmed))
+    } else {
+        None
+    }
 }
 
 fn ensure_parent_exists(p: &Path) -> Result<()> {
@@ -28,6 +37,12 @@ fn ensure_parent_exists(p: &Path) -> Result<()> {
 }
 
 fn default_db_path() -> PathBuf {
+    // First check if we have a build-time configured path
+    if let Some(build_path) = option_env!("RUSTYTIME_BUILD_DB_PATH") {
+        return PathBuf::from(build_path);
+    }
+
+    // Fallback to runtime calculation
     let base = dirs::data_dir()
         .unwrap_or(std::env::current_dir().expect("cwd"))
         .join("rustytime");
@@ -35,8 +50,8 @@ fn default_db_path() -> PathBuf {
 }
 
 pub fn resolve_db_url(cli_db: Option<&str>) -> (String, PathBuf) {
-    // Priority: DATABASE_URL (if sqlite:*), then --db, then default path
-    if let Ok(env_url) = env::var("DATABASE_URL") {
+    // Priority: RUSTYTIME_DATABASE_URL (if sqlite:*), then --db, then build-time configured path, then runtime default path
+    if let Ok(env_url) = env::var("RUSTYTIME_DATABASE_URL") {
         if is_sqlite_url(&env_url) {
             let path = url_to_fs_path(&env_url).unwrap_or_else(|| default_db_path());
             return (env_url, path);
@@ -48,12 +63,22 @@ pub fn resolve_db_url(cli_db: Option<&str>) -> (String, PathBuf) {
             return (db_path.to_string(), path);
         } else {
             let p = PathBuf::from(db_path);
-            return (format!("sqlite://{}", db_path), p);
+            let url = if p.is_absolute() {
+                format!("sqlite://{}", db_path)
+            } else {
+                format!("sqlite:{}", db_path)
+            };
+            return (url, p);
         }
     }
-    // fallback: ~/.local/share/rustytime/rustytime.db (on macOS: ~/Library/Application Support/…)
+    // fallback: build-time configured path or ~/.local/share/rustytime/rustytime.db (on macOS: ~/Library/Application Support/…)
     let p = default_db_path();
-    (format!("sqlite://{}", p.display()), p)
+    let url = if p.is_absolute() {
+        format!("sqlite://{}", p.display())
+    } else {
+        format!("sqlite:{}", p.display())
+    };
+    (url, p)
 }
 
 pub async fn open_db_resolved(db_url: &str, fs_path: &Path) -> Result<SqlitePool> {

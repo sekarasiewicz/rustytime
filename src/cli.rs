@@ -4,8 +4,8 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(name = "timey", version, about = "Rust time tracker")]
 pub struct Cli {
-    #[arg(long, default_value = "timey.db")]
-    pub db: String,
+    #[arg(long)]
+    pub db: Option<String>,
     #[command(subcommand)]
     pub cmd: Command,
 }
