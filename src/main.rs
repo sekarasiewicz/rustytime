@@ -29,11 +29,17 @@ async fn main() -> anyhow::Result<()> {
             ProjectCmd::List => {
                 let projects = services::project::list(&pool).await?;
                 for project in projects {
-                    println!("id: {}, name: {}", project.id, project.name);
+                    println!("Projects: ");
+                    println!(
+                        "id: {}, name: {}, description: {}",
+                        project.id,
+                        project.name,
+                        project.description.unwrap()
+                    );
                 }
             }
             ProjectCmd::Edit { id, name, desc } => { /* update */ }
-            ProjectCmd::Archive { id } => { /* set archived=1 */ }
+            ProjectCmd::Archive { id } => services::project::archive(&pool, &id).await?,
             ProjectCmd::Delete { id } => services::project::delete(&pool, &id).await?,
         },
         Command::Task { cmd } => match cmd {
@@ -42,7 +48,20 @@ async fn main() -> anyhow::Result<()> {
                 name,
                 desc,
             } => {}
-            TaskCmd::List { project_id } => {}
+            TaskCmd::List { project_id } => {
+                let tasks = services::task::list(&pool, &project_id).await?;
+                println!("Tasks for Project: {}", project_id);
+
+                for task in tasks {
+                    println!(
+                        "id: {}, name: {}, description: {}, created_at: {}",
+                        task.id,
+                        task.name,
+                        task.description.unwrap(),
+                        task.created_at
+                    )
+                }
+            }
             TaskCmd::Edit { id, name, desc } => {}
             TaskCmd::Archive { id } => {}
             TaskCmd::Delete { id } => {}

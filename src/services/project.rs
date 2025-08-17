@@ -35,6 +35,13 @@ pub async fn list(pool: &SqlitePool) -> anyhow::Result<Vec<Project>> {
     Ok(rows)
 }
 
+pub async fn archive(pool: &SqlitePool, id: &str) -> anyhow::Result<()> {
+    sqlx::query!("UPDATE projects SET archived = 1 WHERE id = ?", id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
 pub async fn delete(pool: &SqlitePool, id: &str) -> anyhow::Result<()> {
     sqlx::query!("DELETE FROM projects WHERE id=?", id)
         .execute(pool)
