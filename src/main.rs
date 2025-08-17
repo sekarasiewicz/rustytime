@@ -36,7 +36,17 @@ async fn main() -> anyhow::Result<()> {
             ProjectCmd::Archive { id } => { /* set archived=1 */ }
             ProjectCmd::Delete { id } => { /* delete */ }
         },
-        Command::Task { cmd } => { /* mirror projects */ }
+        Command::Task { cmd } => match cmd {
+            TaskCmd::Add {
+                project_id,
+                name,
+                desc,
+            } => {}
+            TaskCmd::List { project_id } => {}
+            TaskCmd::Edit { id, name, desc } => {}
+            TaskCmd::Archive { id } => {}
+            TaskCmd::Delete { id } => {}
+        },
         Command::Start { task_id } => {
             services::timer::start(&pool, &task_id).await?;
             println!("started {task_id}");
