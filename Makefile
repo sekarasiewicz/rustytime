@@ -39,6 +39,10 @@ uninstall: ## Uninstall the binary
 	cargo uninstall rustytime
 
 # Database commands
+init-db: ## Initialize database for local development
+	cargo sqlx database create
+	cargo sqlx migrate run
+
 migrate: ## Run database migrations
 	cargo run -- --help || echo "Database will be created on first run"
 

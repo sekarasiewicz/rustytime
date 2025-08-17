@@ -1,4 +1,3 @@
-// src/db.rs
 use anyhow::{Context, Result};
 use sqlx::SqlitePool;
 use std::{
@@ -64,7 +63,7 @@ pub fn resolve_db_url(cli_db: Option<&str>) -> (String, PathBuf) {
         } else {
             let p = PathBuf::from(db_path);
             let url = if p.is_absolute() {
-                format!("sqlite://{}", db_path)
+                format!("sqlite:///{}", db_path)
             } else {
                 format!("sqlite:{}", db_path)
             };
@@ -74,7 +73,7 @@ pub fn resolve_db_url(cli_db: Option<&str>) -> (String, PathBuf) {
     // fallback: build-time configured path or ~/.local/share/rustytime/rustytime.db (on macOS: ~/Library/Application Support/…)
     let p = default_db_path();
     let url = if p.is_absolute() {
-        format!("sqlite://{}", p.display())
+        format!("sqlite:///{}", p.display())
     } else {
         format!("sqlite:{}", p.display())
     };

@@ -1,4 +1,3 @@
-// src/services/project.rs
 use crate::{models::Project, services::timeutil::*};
 use sqlx::SqlitePool;
 use uuid::Uuid;
