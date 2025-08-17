@@ -11,12 +11,15 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:rustytime_ci.db
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup
+    - name: Install sqlx-cli
+      run: cargo install sqlx-cli --no-default-features --features native-tls,sqlite
+    - name: Setup Database
       run: |
         cargo sqlx database create 
         cargo sqlx migrate run
